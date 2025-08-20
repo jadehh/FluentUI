@@ -263,6 +263,7 @@ Item {
                         return false
                     }
                 }
+                //这是带下拉的菜单局部
                 Rectangle{
                     radius: 4
                     anchors.fill: parent
@@ -391,10 +392,7 @@ Item {
                         }
                         visible: {
                             if(d.isCompactAndNotPanel){
-                                if(item_icon.visible){
-                                    return false
-                                }
-                                return true
+                                return !item_icon.visible;
                             }
                             return true
                         }
@@ -537,6 +535,7 @@ Item {
                             }
                         }
                 }
+                // 这是不带菜单的按钮
                 Rectangle{
                     radius: 4
                     anchors.fill: parent
@@ -601,6 +600,16 @@ Item {
                             }
                         }
                     }
+                    Image {
+                        id: customImage
+                        source: model && model.extra && model.extra.image ? model.extra.image : ""
+                        width: 30
+                        height: 30
+                        fillMode: Image.PreserveAspectFit
+                        visible: model && model.extra && model.extra.image ? true:false
+                        // 设置左边距 20 像素
+                        anchors.left: item_icon.right
+                    }
                     FluText{
                         id:item_title
                         text:{
@@ -631,11 +640,10 @@ Item {
                             }
                             return FluTheme.dark ? FluColors.White : FluColors.Grey220
                         }
-                        anchors{
-                            verticalCenter: parent.verticalCenter
-                            left:item_icon.right
-                            right: item_dot_loader.left
-                        }
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: model && model.extra && model.extra.image ? customImage.right : item_icon.right
+                        anchors.leftMargin:model && model.extra && model.extra.image ? 20:0
+                        anchors.right: item_dot_loader.left
                     }
                     FluLoader{
                         id:item_edit_loader
