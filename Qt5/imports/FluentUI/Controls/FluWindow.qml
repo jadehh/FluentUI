@@ -81,6 +81,8 @@ Window {
         FluRouter.addWindow(window)
         useSystemAppBar = FluApp.useSystemAppBar
         if(!useSystemAppBar && autoCenter){
+            // 1. 将窗口设置给控制器
+            FluWindowController.setupWindow(window)
             moveWindowToDesktopCenter()
         }
         fixWindowSize()
@@ -197,7 +199,7 @@ Window {
             data: window.appBar
             Component.onCompleted: {
                 window.appBar.width = Qt.binding(function(){
-                    return this.parent.width
+                    return this.parent ? this.parent.width : 0
                 })
             }
         }
@@ -381,8 +383,8 @@ Window {
     function setHitTestVisible(val){
         frameless.setHitTestVisible(val)
     }
-    function deleteLater(){
-        FluTools.deleteLater(window)
+    function deleteWindowLater(){
+        FluTools.deleteWindowLater(window)
     }
     function containerItem(){
         return layout_container

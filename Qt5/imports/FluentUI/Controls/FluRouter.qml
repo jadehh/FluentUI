@@ -15,14 +15,23 @@ QtObject {
             var index = windows.indexOf(win)
             if (index !== -1) {
                 windows.splice(index, 1)
-                win.deleteLater()
+                win.deleteWindowLater()
             }
         }
     }
+
+    function clear(){
+        for(var i =0 ;i< windows.length; i++){
+            var win = windows[i]
+            win.close()
+        }
+    }
+
+
     function exit(retCode){
         for(var i =0 ;i< windows.length; i++){
             var win = windows[i]
-            win.deleteLater()
+            win.deleteWindowLater()
         }
         windows = []
         Qt.exit(retCode)

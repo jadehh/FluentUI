@@ -8,6 +8,9 @@
 */
 //
 #include "include/FluentUI.h"
+
+#include <QFileInfo>
+
 #include "include/Def.h"
 #include "include/FluentIconDef.h"
 #include "include/FluApp.h"
@@ -24,6 +27,8 @@
 #include "include/FluFrameless.h"
 #include "include/FluTableModel.h"
 #include "include/FluHotkey.h"
+#include "include/FluHotReloadManager.h"
+#include "include/FluWindowController.h"
 #include "include/qmlcustomplot/TimePlot.h"
 #include "include/qmlcustomplot/baseplot.h"
 #include "include/qmlcustomplot/axis.h"
@@ -31,10 +36,43 @@
 #include "include/qmlcustomplot/grid.h"
 
 const char* FluentUI::_uri = "FluentUI";
+FLuHotReloadManager* FluentUI::hotReloadManager = nullptr;
 
 void FluentUI::registerTypes(const QQmlEngine *engine) {
     initializeEngine(engine, _uri);
     registerTypes(_uri);
+}
+
+void FluentUI::enableHotReloader()
+{
+    hotReloadManager->enableHotReloadManager();
+    // 连接信号（可选）
+    QObject::connect(hotReloadManager, &FLuHotReloadManager::fileChanged, [](const QString &path) {
+        qDebug() << "File changed:" << QFileInfo(path).fileName();
+    });
+
+    QObject::connect(hotReloadManager, &FLuHotReloadManager::reloadStarted, []() {
+        qDebug() << "Starting QML start reload...";
+    });
+
+    QObject::connect(hotReloadManager, &FLuHotReloadManager::reloadCompleted, []() {
+        qDebug() << "QML reload completed!";
+    });
+    // 启动热重载
+    if (!hotReloadManager->startWatching()) {
+        qWarning() << "Failed to start QML hot reload";
+    }
+}
+
+void FluentUI::initHotReloader(QQmlApplicationEngine *engine, const QUrl& mainUrlPath,const char* uri, const int major,const int minor,const char* singleQmlPath,const char* watchQmlPath)
+{
+    hotReloadManager = new FLuHotReloadManager(engine,mainUrlPath,uri,major,minor,singleQmlPath,watchQmlPath);
+
+}
+
+void FluentUI::registerSingleTypes()
+{
+    hotReloadManager->registerQmlSingletonObject();
 }
 
 void FluentUI::registerTypes(const char *uri) {
@@ -207,6 +245,14 @@ void FluentUI::registerTypes(const char *uri) {
                                                engine->setObjectOwnership(instance, QQmlEngine::CppOwnership);
                                                return instance;
                                            });
+    qmlRegisterSingletonType<FluWindowController>(uri, major, minor, "FluWindowController",
+                                       [](const QQmlEngine *engine, const QJSEngine *scriptEngine) -> QObject* {
+                                           Q_UNUSED(scriptEngine)
+                                           QObject *instance = FluWindowController::getInstance();
+                                           engine->setObjectOwnership(instance, QQmlEngine::CppOwnership);
+                                           return instance;
+                                       });
+
     qmlRegisterModule(uri, major, minor);
 #endif
 }

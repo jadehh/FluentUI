@@ -604,11 +604,16 @@ Item {
                         id: customImage
                         source: model && model.extra && model.extra.image ? model.extra.image : ""
                         width: 30
-                        height: 30
                         fillMode: Image.PreserveAspectFit
                         visible: model && model.extra && model.extra.image ? true:false
                         // 设置左边距 20 像素
-                        anchors.left: item_icon.right
+                        anchors {
+                            left: item_icon.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            topMargin:5
+                            bottomMargin:5
+                        }
                     }
                     FluText{
                         id:item_title

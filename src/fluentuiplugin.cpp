@@ -8,9 +8,7 @@
 */
 //
 #include "include/fluentuiplugin.h"
-
 #include "include/FluentUI.h"
-
 FluentUIPlugin::FluentUIPlugin() = default;
 
 void FluentUIPlugin::registerTypes(const char *uri) {

@@ -51,16 +51,16 @@ if (NOT FLUENTUI_QML_PLUGIN_DIRECTORY)
 endif ()
 
 #国际化
-find_program(QT_LUPDATE NAMES lupdate)
-find_program(QT_LRELEASE NAMES lrelease)
-if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/fluentui_en_US.qm)
-    execute_process(COMMAND ${QT_LUPDATE} ${CMAKE_CURRENT_LIST_DIR} -ts fluentui_en_US.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-    execute_process(COMMAND ${QT_LRELEASE} fluentui_en_US.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-endif ()
-if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/fluentui_zh_CN.qm)
-    execute_process(COMMAND ${QT_LUPDATE} ${CMAKE_CURRENT_LIST_DIR} -ts fluentui_zh_CN.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-    execute_process(COMMAND ${QT_LRELEASE} fluentui_zh_CN.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-endif ()
+#find_program(QT_LUPDATE NAMES lupdate)
+#find_program(QT_LRELEASE NAMES lrelease)
+#if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/fluentui_en_US.qm)
+#    execute_process(COMMAND ${QT_LUPDATE} ${CMAKE_CURRENT_LIST_DIR} -ts fluentui_en_US.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+#    execute_process(COMMAND ${QT_LRELEASE} fluentui_en_US.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+#endif ()
+#if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/fluentui_zh_CN.qm)
+#    execute_process(COMMAND ${QT_LUPDATE} ${CMAKE_CURRENT_LIST_DIR} -ts fluentui_zh_CN.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+#    execute_process(COMMAND ${QT_LRELEASE} fluentui_zh_CN.ts WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+#endif ()
 
 file(GLOB QM_FILE_PATHS ${CMAKE_CURRENT_LIST_DIR}/ *.qm)
 file(COPY ${QM_FILE_PATHS} DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/Qt${QT_VERSION_MAJOR}/imports/FluentUI/i18n")
@@ -131,7 +131,11 @@ endif ()
 if (FLUENTUI_BUILD_STATIC_LIB)
     set(LIB_TYPE "STATIC")
 else ()
-    set(LIB_TYPE "SHARED")
+    set(LIB_TYPE "SHARED"
+            src/FluentController.cpp
+            src/FluentController.h
+            src/FluWindowController.cpp
+            include/FluWindowController.h)
 endif ()
 
 if (FLUENTUI_BUILD_STATIC_LIB)

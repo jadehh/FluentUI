@@ -63,6 +63,9 @@ public:
 
     Q_INVOKABLE static void deleteLater(QObject *p);
 
+    Q_INVOKABLE static void deleteWindowLater(QObject *p);
+
+
     Q_INVOKABLE static QString getFileNameByUrl(const QUrl &url);
 
     Q_INVOKABLE static QRect getVirtualGeometry();

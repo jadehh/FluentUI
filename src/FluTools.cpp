@@ -107,6 +107,21 @@ void FluTools::deleteLater(QObject *p) {
     }
 }
 
+void FluTools::deleteWindowLater(QObject* p)
+{
+    // 获取 QQuickWindow
+    if (QQuickWindow* quickWindow = qobject_cast<QQuickWindow*>(p))
+    {
+        quickWindow->destroy();
+        quickWindow->deleteLater();
+    }
+    else
+    {
+        p->deleteLater();
+    }
+}
+
+
 QString FluTools::toLocalPath(const QUrl &url) {
     return url.toLocalFile();
 }

@@ -52,6 +52,8 @@ public:
 private:
     QQmlEngine *_engine{};
     QTranslator *_translator = nullptr;
+
+
 };
 
 #endif //FLUAPP_H
