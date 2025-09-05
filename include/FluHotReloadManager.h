@@ -12,7 +12,6 @@
 #include <QObject>
 #include <QFileSystemWatcher>
 #include <QQmlApplicationEngine>
-#include <QQmlEngine>
 #include <QSet>
 #include <QTimer>
 #include <QUrl>
@@ -24,7 +23,7 @@ class FLuHotReloadManager : public QObject
 public:
 
 
-    explicit FLuHotReloadManager(QQmlApplicationEngine *engine, QUrl mainQmlPath, const char* name,int major,int minor,const char* singleQmlPath, const char* watchQmlPath, QObject *parent = nullptr);
+    explicit FLuHotReloadManager(QQmlApplicationEngine *engine, const QUrl& mainQmlPath, const char* name,int major,int minor,const char* rootPath, const char* singleQmlPath, const char* watchQmlPath, QObject *parent = nullptr);
     ~FLuHotReloadManager() override;
 
     // 是否启用监听
@@ -81,6 +80,7 @@ private:
     QUrl m_mainQmlUrl;
     const char* m_singleQmlPath;
     const char* m_name;
+    const char* m_rootPath;
     int m_major;
     int m_minor;
     QObject* m_rootObject = nullptr;

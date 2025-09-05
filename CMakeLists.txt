@@ -8,10 +8,14 @@ else ()
     project(fluentuiplugin VERSION 1.0)
 endif ()
 
-
+if(MSVC)
+    add_compile_options(/utf-8)
+else()
+    add_compile_options(-finput-charset=UTF-8 -fexec-charset=UTF-8)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.cmake/)
-
+include(findJadeTools)
 #配置通用编译
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -213,6 +217,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt${QT_VERSION_MAJOR}::Qml
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::PrintSupport
+        ${JADE_TOOLS_LIBS}
 )
 if(APPLE)
     find_library(CARBON_LIBRARY Carbon)

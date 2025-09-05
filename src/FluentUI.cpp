@@ -10,6 +10,7 @@
 #include "include/FluentUI.h"
 
 #include <QFileInfo>
+#include <jade_tools/jade_tools.h>
 
 #include "include/Def.h"
 #include "include/FluentIconDef.h"
@@ -28,6 +29,7 @@
 #include "include/FluTableModel.h"
 #include "include/FluHotkey.h"
 #include "include/FluHotReloadManager.h"
+#include "include/FluLogger.h"
 #include "include/FluWindowController.h"
 #include "include/qmlcustomplot/TimePlot.h"
 #include "include/qmlcustomplot/baseplot.h"
@@ -38,8 +40,8 @@
 const char* FluentUI::_uri = "FluentUI";
 FLuHotReloadManager* FluentUI::hotReloadManager = nullptr;
 
-void FluentUI::registerTypes(const QQmlEngine *engine) {
-    initializeEngine(engine, _uri);
+void FluentUI::registerTypes(const QQmlEngine *engin) {
+    initializeEngine(engin, _uri);
     registerTypes(_uri);
 }
 
@@ -48,26 +50,25 @@ void FluentUI::enableHotReloader()
     hotReloadManager->enableHotReloadManager();
     // 连接信号（可选）
     QObject::connect(hotReloadManager, &FLuHotReloadManager::fileChanged, [](const QString &path) {
-        qDebug() << "File changed:" << QFileInfo(path).fileName();
+        DLL_LOG_DEBUG("FluentUI") << "监测到QML文件改变:" << QFileInfo(path).fileName().toStdString();
     });
 
     QObject::connect(hotReloadManager, &FLuHotReloadManager::reloadStarted, []() {
-        qDebug() << "Starting QML start reload...";
+       DLL_LOG_DEBUG("FluentUI") << "准备进行QML热重载";
     });
 
     QObject::connect(hotReloadManager, &FLuHotReloadManager::reloadCompleted, []() {
-        qDebug() << "QML reload completed!";
+        DLL_LOG_DEBUG("FluentUI") << "QML热重载完成!";
     });
     // 启动热重载
     if (!hotReloadManager->startWatching()) {
-        qWarning() << "Failed to start QML hot reload";
+        DLL_LOG_ERROR("FluentUI") << "开启QML热重载失败";
     }
 }
 
-void FluentUI::initHotReloader(QQmlApplicationEngine *engine, const QUrl& mainUrlPath,const char* uri, const int major,const int minor,const char* singleQmlPath,const char* watchQmlPath)
+void FluentUI::initHotReloader(QQmlApplicationEngine *engine, const QUrl& mainUrlPath,const char* uri, const int major,const int minor,const char* rootPath,const char* singleQmlPath,const char* watchQmlPath)
 {
-    hotReloadManager = new FLuHotReloadManager(engine,mainUrlPath,uri,major,minor,singleQmlPath,watchQmlPath);
-
+    hotReloadManager = new FLuHotReloadManager(engine,mainUrlPath,uri,major,minor,rootPath,singleQmlPath,watchQmlPath);
 }
 
 void FluentUI::registerSingleTypes()
@@ -209,6 +210,14 @@ void FluentUI::registerTypes(const char *uri) {
     qmlRegisterUncreatableMetaObject(FluNavigationViewType::staticMetaObject, uri, major, minor, "FluNavigationViewType", "Access to enums & flags only");
     qmlRegisterUncreatableMetaObject(FluTimelineType::staticMetaObject, uri, major, minor, "FluTimelineType", "Access to enums & flags only");
     qmlRegisterUncreatableMetaObject(FluSheetType::staticMetaObject, uri, major, minor, "FluSheetType", "Access to enums & flags only");
+
+    qmlRegisterSingletonType<FluLogger>(uri, major, minor, "FluLogger",
+                                     [](const QQmlEngine *engine, const QJSEngine *scriptEngine) -> QObject* {
+                                         Q_UNUSED(scriptEngine)
+                                         QObject *instance = FluLogger::getInstance();
+                                         engine->setObjectOwnership(instance, QQmlEngine::CppOwnership);
+                                         return instance;
+                                     });
 
     qmlRegisterSingletonType<FluApp>(uri, major, minor, "FluApp",
                                      [](const QQmlEngine *engine, const QJSEngine *scriptEngine) -> QObject* {

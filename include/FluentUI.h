@@ -26,7 +26,7 @@ public:
 
     static Q_DECL_EXPORT void registerTypes(const QQmlEngine *engin);
     static void registerTypes(const char *uri);
-    static Q_DECL_EXPORT void initHotReloader(QQmlApplicationEngine *engine, const QUrl& mainUrlPath,const char* uri, int major, int minor,const char* singleQmlPath,const char* watchQmlPath);
+    static Q_DECL_EXPORT void initHotReloader(QQmlApplicationEngine *engine, const QUrl& mainUrlPath,const char* uri, int major, int minor,const char* rootPath,const char* singleQmlPath,const char* watchQmlPath);
     static void initializeEngine(const QQmlEngine *engine, [[maybe_unused]] const char *uri);
     static Q_DECL_EXPORT void registerSingleTypes();
     static Q_DECL_EXPORT void enableHotReloader();

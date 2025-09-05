@@ -6,19 +6,18 @@
 # @Software : Samples
 # @Desc     : FluHotReloadManager.cpp
 */
-#include "include/FluHotReloadManager.h"
 #include <QQmlApplicationEngine>
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
 #include <qqmlcomponent.h>
-#include <QQuickWindow>
 #include <QElapsedTimer>  // 添加这个头文件
+#include <jade_tools/jade_tools.h>
+#include "include/FluHotReloadManager.h"
 
 
-class QQuickWindow;
 
-FLuHotReloadManager::FLuHotReloadManager(QQmlApplicationEngine * engine, QUrl mainQmlPath, const char* name, const int major, const int minor, const char*singleQmlPath,const char* watchQmlPath, QObject* parent)
+FLuHotReloadManager::FLuHotReloadManager(QQmlApplicationEngine * engine, const QUrl& mainQmlPath, const char* name, const int major, const int minor,const char* rootPath, const char*singleQmlPath,const char* watchQmlPath, QObject* parent)
     : QObject(parent)
       , m_engine(engine)
       , m_watcher(new QFileSystemWatcher(this))
@@ -29,6 +28,7 @@ FLuHotReloadManager::FLuHotReloadManager(QQmlApplicationEngine * engine, QUrl ma
     m_name = name;
     m_major = major;
     m_minor = minor;
+    m_rootPath = rootPath;
     m_singleQmlPath = singleQmlPath;
     setWatchDirectory(watchQmlPath);
 }
@@ -86,7 +86,7 @@ bool FLuHotReloadManager::startWatching()
     {
         watchDirectoryRecursively(m_watchDirectory);
         m_isWatching = true;
-        qDebug() << "QML hot reload started. Watching" << m_watchedFiles.size() << "files";
+        DLL_LOG_DEBUG("FLuHotReloadManager") << "QML热重载开始. 开始监测:" << m_watchedFiles.size() << "文件数量";
         return true;
     }
     catch (const std::exception& e)
@@ -105,7 +105,7 @@ void FLuHotReloadManager::stopWatching()
     m_watchedFiles.clear();
     m_isWatching = false;
     m_reloadTimer.stop();
-    qDebug() << "QML hot reload stopped";
+    DLL_LOG_DEBUG("FluHotReloadManager") << "QML文件热重载检测停止" ;
 }
 
 void FLuHotReloadManager::setReloadDelay(int delayMs)
@@ -209,27 +209,38 @@ void FLuHotReloadManager::onFileChanged(const QString& path)
 
 void FLuHotReloadManager::registerQmlSingletonObject() const
 {
-    const QDir dir(m_singleQmlPath);
+    QString singlePath = QString(m_rootPath) + m_singleQmlPath;
+    if (singlePath.startsWith("file://")) {
+        const QUrl url(singlePath);
+        singlePath = url.toLocalFile();
+    }else if (singlePath.startsWith("qrc"))
+    {
+        singlePath = singlePath.replace("qrc", "");
+    }
+    const QDir dir(singlePath);
     if (!dir.exists())
     {
+        qDebug() << "Single Qml Dir Not Exists" << QString(m_rootPath) + m_singleQmlPath;
         return;
     }
-
     // 监视当前目录的所有QML文件
     QStringList filters;
     filters << "*.qml" << "*.QML";
     QFileInfoList  qmlFiles = dir.entryInfoList(filters, QDir::Files);
     for (const QFileInfo& file : qmlFiles)
     {
-        QByteArray filePathArray = ("file:///" + file.absoluteFilePath()).toUtf8();
+        QString fileName = file.fileName();
         QByteArray fileNameArray = file.baseName().toUtf8().constData();
-        qmlRegisterSingletonType( QUrl(filePathArray.constData()), m_name, m_major, m_minor,fileNameArray.constData());
+        QString qmlFilePath = QString(m_rootPath) + m_singleQmlPath + fileName;
+        QByteArray qmlFilePathArray = qmlFilePath.toUtf8().constData();
+        qmlRegisterSingletonType( QUrl(qmlFilePath), m_name, m_major, m_minor,fileNameArray.constData());
     }
 }
 void FLuHotReloadManager::performReload()
 {
     emit reloadStarted();
     QMetaObject::invokeMethod(m_engine->rootObjects().first(), "restartApp"); // 重启程序
+    delete m_engine->rootObjects().first();
     m_engine->clearComponentCache();
     registerQmlSingletonObject();
     m_engine->load(m_mainQmlUrl);

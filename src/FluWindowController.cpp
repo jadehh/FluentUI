@@ -58,8 +58,6 @@ void FluWindowController::updateUIScale()
 
     if (!qFuzzyCompare(m_uiScale, newScale)) {
         m_uiScale = newScale;
-        qDebug() << "FluWindowController::updateUIScale" << m_uiScale;
-
         emit uiScaleChanged();
     }
 }
